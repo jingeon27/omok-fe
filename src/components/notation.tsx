@@ -1,10 +1,14 @@
 import clsx from "clsx";
 import { ComponentProps } from "react";
-export interface 바둑알props extends ComponentProps<"button"> {
+export interface NotaionProps extends ComponentProps<"div"> {
   playingFirst: boolean;
 }
-export const 바둑알 = ({ playingFirst, className, ...props }: 바둑알props) => (
-  <button
+export const Notation = ({
+  playingFirst,
+  className,
+  ...props
+}: NotaionProps) => (
+  <div
     {...props}
     className={clsx(
       "w-2 h-2 rounded-full",
@@ -12,3 +16,4 @@ export const 바둑알 = ({ playingFirst, className, ...props }: 바둑알props)
     )}
   />
 );
+Notation.banned = () => {};
