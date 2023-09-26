@@ -13,7 +13,7 @@ export const Table = ({
       <div
         {...props}
         className={clsx(
-          "bg-yellow-500 md:w-[600px] md:h-[600px] shadow-2xl relative",
+          "bg-yellow-500 md:w-[610px] md:h-[610px] shadow-2xl relative p-[5px]",
           className
         )}
       >

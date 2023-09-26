@@ -11,9 +11,9 @@ export const Notation = ({
   <div
     {...props}
     className={clsx(
-      "w-2 h-2 rounded-full",
+      "w-[38px] h-[38px] rounded-full",
       playingFirst ? "bg-black" : "bg-white"
     )}
   />
 );
-Notation.banned = () => {};
+Notation.banned = () => <div />;
