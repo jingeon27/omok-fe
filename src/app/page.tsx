@@ -1,23 +1,18 @@
 "use client";
 import { Omok } from "@/components/template/omok";
-import { useOmok } from "@/hooks/useOmok";
+import { usePersonal } from "@/hooks/usePersonal";
 import clsx from "clsx";
-import Image from "next/image";
-import { useState } from "react";
 
 export default function Home() {
-  const { placement } = useOmok(() => {}, true);
-  const [firstPlaying, setFirstPlaying] = useState();
+  const { placement, state, onPlacement } = usePersonal();
   return (
     <main
       className={clsx(" w-screen h-screen", "flex items-center justify-center")}
     >
       <Omok
         placement={placement}
-        onPlacement={function ({ x, y }: { x: number; y: number }): void {
-          throw new Error("Function not implemented.");
-        }}
-        playingFirst={true}
+        onPlacement={onPlacement}
+        playingFirst={state.isFirstPlaying}
       />
     </main>
   );

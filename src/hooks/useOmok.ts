@@ -1,7 +1,11 @@
 import { PickUnionType, placementType } from "@/util/util";
 import { useEffect, useState } from "react";
 
-export const useOmok = (isWin: () => void, isFirst: boolean) => {
+export const useOmok = (
+  isWinFn: () => void,
+  timeLimiFn: () => void,
+  isFirst: boolean
+) => {
   const [placement, setPlacement] = useState<placementType[][]>(() => {
     const initial: placementType[][] = Array.from({ length: 15 }, () =>
       Array.from({ length: 15 }, () => "blank")
@@ -44,7 +48,7 @@ export const useOmok = (isWin: () => void, isFirst: boolean) => {
         cnt++;
       }
       if (type === "black" ? cnt === 5 : cnt >= 5) {
-        return isWin();
+        return isWinFn();
       }
     }
   };
@@ -60,6 +64,12 @@ export const useOmok = (isWin: () => void, isFirst: boolean) => {
     checkDirection(1, 0);
     checkDirection(1, 1);
     checkDirection(1, -1);
+    const timeout = setTimeout(() => {
+      timeLimiFn();
+    }, 35000);
+    return () => {
+      clearTimeout(timeout);
+    };
     // setPlacement((prev) =>
     // {
     //   const arr = prev;

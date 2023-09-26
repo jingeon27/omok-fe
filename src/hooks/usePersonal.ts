@@ -1,6 +1,5 @@
 import { useReducer, useState } from "react";
 import { useOmok } from "./useOmok";
-import { useTimeLimitEffect } from "./useTimeLimitEffect";
 import { PickUnionType, onPlacementParams, placementType } from "@/util/util";
 type winType =
   | PickUnionType<placementType, "white" | "black">
@@ -29,18 +28,23 @@ const reducer = (state: typeof initialState, action: Action) => {
 };
 export const usePersonal = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { placement, setPlacement } = useOmok(() => {
-    dispatch({
-      type: "IS_WIN",
-      isWin: state.isFirstPlaying ? "black" : "white",
-    });
-  }, state.isFirstPlaying);
-  useTimeLimitEffect(() => {
-    dispatch({
-      type: "IS_WIN",
-      isWin: state.isFirstPlaying ? "white" : "black",
-    });
-  }, [placement]);
+  const { placement, setPlacement } = useOmok(
+    () => {
+      dispatch({
+        type: "IS_WIN",
+        isWin: state.isFirstPlaying ? "black" : "white",
+      });
+    },
+    () => {
+      if (state.isWin === "initial") {
+        dispatch({
+          type: "IS_WIN",
+          isWin: state.isFirstPlaying ? "white" : "black",
+        });
+      }
+    },
+    state.isFirstPlaying
+  );
   const onPlacement = ({ x, y, state }: onPlacementParams) => {
     setPlacement((prev) => {
       prev[x][y] = state;
@@ -50,5 +54,6 @@ export const usePersonal = () => {
   return {
     placement,
     onPlacement,
+    state,
   };
 };
