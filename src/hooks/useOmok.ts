@@ -1,22 +1,27 @@
-import { PickUnionType, placementType } from "@/util/util";
+import { placementType, whiteBlackType, onPlacementParams } from "@/util";
 import { useEffect, useState } from "react";
-
+import { winType } from "./usePersonal";
+type memorizeType = onPlacementParams & { state: whiteBlackType };
+const position = (() => {
+  const initial: placementType[][] = Array.from({ length: 15 }, () =>
+    Array.from({ length: 15 }, () => "blank")
+  );
+  initial[3][3] = "point";
+  initial[3][11] = "point";
+  initial[11][3] = "point";
+  initial[7][7] = "point";
+  initial[11][11] = "point";
+  return initial;
+})();
 export const useOmok = (
   isWinFn: () => void,
   timeLimiFn: () => void,
   isFirst: boolean
 ) => {
-  const [placement, setPlacement] = useState<placementType[][]>(() => {
-    const initial: placementType[][] = Array.from({ length: 15 }, () =>
-      Array.from({ length: 15 }, () => "blank")
-    );
-    initial[3][3] = "point";
-    initial[3][11] = "point";
-    initial[11][3] = "point";
-    initial[7][7] = "point";
-    initial[11][11] = "point";
-    return initial;
-  });
+  const [placement, setPlacement] = useState<{
+    position: placementType[][];
+    memorize: memorizeType[];
+  }>(() => ({ position, memorize: [] }));
   const checkWin = ({
     x,
     y,
@@ -28,48 +33,49 @@ export const useOmok = (
     y: number;
     X: number;
     Y: number;
-    type: PickUnionType<placementType, "black" | "white">;
+    type: whiteBlackType;
   }) => {
-    if (placement[x][y] === type) {
+    if (placement.position[x][y] === type) {
       let cnt = 1;
-      let i, j;
+      let i: number, j: number;
       for (
         i = x - X, j = y - Y;
-        i >= 0 && j >= 0 && placement[i][j] === type;
+        i >= 0 && j >= 0 && placement.position[i][j] === type;
         i -= X, j -= Y
       ) {
         cnt++;
       }
       for (
         i = x + X, j = y + Y;
-        i < 19 && j < 19 && placement[i][j] === type;
+        i < 19 && j < 19 && placement.position[i][j] === type;
         i += X, j += Y
       ) {
         cnt++;
       }
       if (type === "black" ? cnt === 5 : cnt >= 5) {
-        return isWinFn();
+        return true;
       }
-    }
-  };
-  const checkDirection = (X: number, Y: number) => {
-    for (let x = 0; x < 15; x++) {
-      for (let y = 0; y < 15; y++) {
-        return checkWin({ X, Y, x, y, type: isFirst ? "black" : "white" });
-      }
+      return false;
     }
   };
   useEffect(() => {
-    checkDirection(0, 1);
-    checkDirection(1, 0);
-    checkDirection(1, 1);
-    checkDirection(1, -1);
-    const timeout = setTimeout(() => {
-      timeLimiFn();
-    }, 35000);
-    return () => {
-      clearTimeout(timeout);
-    };
+    for (let x = 0; x < 15; x++) {
+      for (let y = 0; y < 15; y++) {
+        const params: onPlacementParams & { type: whiteBlackType } = {
+          x,
+          y,
+          type: isFirst ? "white" : "black",
+        };
+        if (
+          checkWin({ X: 0, Y: 1, ...params }) ||
+          checkWin({ X: 1, Y: 1, ...params }) ||
+          checkWin({ X: 1, Y: 0, ...params }) ||
+          checkWin({ X: 1, Y: -1, ...params })
+        ) {
+          return isWinFn();
+        }
+      }
+    }
     // setPlacement((prev) =>
     // {
     //   const arr = prev;
@@ -77,11 +83,26 @@ export const useOmok = (
     //   }
     // }
     // )
+
+    const timeout = setTimeout(() => {
+      timeLimiFn();
+    }, 35000);
+    return () => {
+      clearTimeout(timeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placement]);
+  }, [isFirst, placement.position]);
+
+  const changePlacement = ({ x, y, state }: memorizeType) => {
+    setPlacement((prev) => {
+      prev.position[x][y] = state;
+      prev.memorize = [...prev.memorize, { x, y, state }];
+      return prev;
+    });
+  };
 
   return {
     placement,
-    setPlacement,
+    changePlacement,
   };
 };

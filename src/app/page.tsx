@@ -10,7 +10,7 @@ export default function Home() {
       className={clsx(" w-screen h-screen", "flex items-center justify-center")}
     >
       <Omok
-        placement={placement}
+        placement={placement.position}
         onPlacement={onPlacement}
         playingFirst={state.isFirstPlaying}
       />

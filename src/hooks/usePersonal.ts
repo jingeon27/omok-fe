@@ -1,10 +1,7 @@
-import { useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useOmok } from "./useOmok";
-import { PickUnionType, onPlacementParams, placementType } from "@/util/util";
-type winType =
-  | PickUnionType<placementType, "white" | "black">
-  | "draw"
-  | "initial";
+import { onPlacementParams, whiteBlackType } from "@/util";
+export type winType = whiteBlackType | "draw" | "initial";
 const initialState: {
   isFirstPlaying: boolean;
   isWin: winType;
@@ -28,29 +25,38 @@ const reducer = (state: typeof initialState, action: Action) => {
 };
 export const usePersonal = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { placement, setPlacement } = useOmok(
-    () => {
+  const timeLimited = () => {
+    if (state.isWin === "initial") {
       dispatch({
         type: "IS_WIN",
         isWin: state.isFirstPlaying ? "black" : "white",
       });
-    },
-    () => {
-      if (state.isWin === "initial") {
-        dispatch({
-          type: "IS_WIN",
-          isWin: state.isFirstPlaying ? "white" : "black",
-        });
-      }
-    },
-    state.isFirstPlaying
-  );
-  const onPlacement = ({ x, y, state }: onPlacementParams) => {
-    setPlacement((prev) => {
-      prev[x][y] = state;
-      return prev;
+    }
+  };
+  const conCaveWin = () => {
+    dispatch({
+      type: "IS_WIN",
+      isWin: state.isFirstPlaying ? "white" : "black",
     });
   };
+  const changeTurn = () => {
+    dispatch({
+      type: "FIRST_PLAYING",
+      isFirstPlaying: !state.isFirstPlaying,
+    });
+  };
+  const { placement, changePlacement } = useOmok(
+    conCaveWin,
+    timeLimited,
+    state.isFirstPlaying
+  );
+  const onPlacement = ({ x, y }: onPlacementParams) => {
+    changePlacement({ x, y, state: state.isFirstPlaying ? "black" : "white" });
+    changeTurn();
+  };
+  useEffect(() => {
+    window.alert(`${state.isWin}의 승리`);
+  }, [state.isWin]);
   return {
     placement,
     onPlacement,
